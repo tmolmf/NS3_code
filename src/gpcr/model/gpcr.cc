@@ -75,7 +75,7 @@ struct DeferredRouteOutputTag : public Tag
 
 
 /********** Miscellaneous constants **********/
-Ptr<UniformRandomVariable> var = CreateObject<UniformRandomVariable> ();//for solve JITTER problem
+Ptr<UniformRandomVariable> var = CreateObject<UniformRandomVariable> ();
 /*
 /// Maximum allowed jitter.
 #define GPCR_MAXJITTER          (HelloInterval.GetSeconds () / 2)
@@ -158,6 +158,7 @@ bool RoutingProtocol::RouteInput (Ptr<const Packet> p, const Ipv4Header &header,
                                   UnicastForwardCallback ucb, MulticastForwardCallback mcb,
                                   LocalDeliverCallback lcb, ErrorCallback ecb)
 {
+
 NS_LOG_FUNCTION (this << p->GetUid () << header.GetDestination () << idev->GetAddress ());
   if (m_socketAddresses.empty ())
     {
@@ -511,7 +512,6 @@ RoutingProtocol::RecvGPCR (Ptr<Socket> socket)
   Position.x = hdr.GetOriginPosx ();
   Position.y = hdr.GetOriginPosy ();
   uint8_t isCoordinator = hdr.GetIsCoordinator ();
-//std::cout<<"<!-- ttm mess--> "<<hdr.Getttm_mess()<<" "<<hdr.GetOriginPosx ()<<" "<<hdr.GetOriginPosy ()<<" "<<std::endl;
 
   InetSocketAddress inetSourceAddr = InetSocketAddress::ConvertFrom (sourceAddress);
   Ipv4Address sender = inetSourceAddr.GetIpv4 ();
@@ -697,21 +697,17 @@ RoutingProtocol::SendHello ()
   NS_LOG_FUNCTION (this);
   double positionX;
   double positionY;
-  double positionZ;
 
   Ptr<MobilityModel> MM = m_ipv4->GetObject<MobilityModel> ();
 
   positionX = MM->GetPosition ().x;
   positionY = MM->GetPosition ().y;
-  positionZ = MM->GetPosition ().z;
-std::cout << "SendHello position : "<<positionX<<", "<<positionY<<", "<<positionZ << std::endl;
 
   for (std::map<Ptr<Socket>, Ipv4InterfaceAddress>::const_iterator j = m_socketAddresses.begin (); j != m_socketAddresses.end (); ++j)
     {
       Ptr<Socket> socket = j->first;
       Ipv4InterfaceAddress iface = j->second;
-      HelloHeader helloHeader (((uint64_t) positionX),((uint64_t) positionY), m_neighbors.AmICoordinator (), ((uint64_t)positionX%10)); 
-//        helloHeader.Setttm_mess(11);
+      HelloHeader helloHeader (((uint64_t) positionX),((uint64_t) positionY), m_neighbors.AmICoordinator ()); 
 
       Ptr<Packet> packet = Create<Packet> ();
       packet->AddHeader (helloHeader);
@@ -997,7 +993,6 @@ Ptr<Ipv4Route>
 RoutingProtocol::RouteOutput (Ptr<Packet> p, const Ipv4Header &header,
                               Ptr<NetDevice> oif, Socket::SocketErrno &sockerr)
 {
-std::cout<<std::endl;
   NS_LOG_FUNCTION (this << header << (oif ? oif->GetIfIndex () : 0));
 
   if (!p)
