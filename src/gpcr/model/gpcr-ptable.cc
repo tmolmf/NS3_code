@@ -17,7 +17,7 @@ PositionTable::PositionTable ()
 {
   m_txErrorCallback = MakeCallback (&PositionTable::ProcessTxError, this);
   m_entryLifeTime = Seconds (2); //FIXME fazer isto parametrizavel de acordo com tempo de hello
-
+//aveDist=0;
 }
 
 uint8_t
@@ -37,6 +37,14 @@ double meanY = 0;
 int count = 0;
 /*according to GPCR authors p_xy = MOD(covXY/(covX*covY)), if p_xy<0.9 node is in junction*/
 
+//add_start
+//aveDist++;
+
+//std::cout<<"aveDist : "<<aveDist<<std::endl;
+//double nodedistance = 0;//CalculateDistance (nodePos, i->second.first);
+//int nodecount = 0;
+//add_end
+
 /*cicle through neighbours to calculate meanX and meanY*/
 std::map<Ipv4Address, std::pair<Vector, std::pair<Time, uint8_t> > >::iterator i;
   for (i = m_table.begin (); !(i == m_table.end ()); i++)
@@ -51,10 +59,15 @@ meanY = meanY / count;
 /*cicle again to calculate covXY, covX and covY*/
   for (i = m_table.begin (); !(i == m_table.end ()); i++)
     {
+//nodedistance += CalculateDistance (nodePos, i->second.first);//add nodePos make error
+//nodecount++;//add
 	covXY = covXY + ((i->second.first.x - meanX) * (i->second.first.y - meanY));
 	covX = covX + ((i->second.first.x - meanX) * (i->second.first.x - meanX));
 	covY = covY + ((i->second.first.y - meanY) * (i->second.first.y - meanY));
 	}
+//std::cout<<"avrdistance"<<nodedistance/nodecount<<std::endl;//add
+//if(nodedistance/nodecount<aveDist)std::cout<<"<!--AmICoordinator!!-->"<<std::endl;//add
+//aveDist=nodedistance/nodecount;//add
 	covX = sqrt(covX);
 	covY = sqrt(covY);
 	

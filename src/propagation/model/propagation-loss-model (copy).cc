@@ -29,19 +29,6 @@
 #include "ns3/string.h"
 #include "ns3/pointer.h"
 #include <cmath>
-#include <fstream>
-#include <iostream>
-#include <string>
-#include <vector>
-
-using namespace std;
-
-/*
-struct obtacle{
-	//double under_x1,under_y1,under_z1,under_x2,under_y2,under_z2,under_x3,under_y3,under_z3,under_x4,under_y4,under_z4;
-	double upper_x1,upper_y1,upper_z1,upper_x2,upper_y2,upper_z2,upper_x3,upper_y3,upper_z3,upper_x4,upper_y4,upper_z4;
-};
-*/
 
 namespace ns3 {
 
@@ -60,152 +47,9 @@ PropagationLossModel::GetTypeId (void)
   return tid;
 }
 
-// std::vector <obtacle> obstaclelist;
-
 PropagationLossModel::PropagationLossModel ()
   : m_next (0)
 {
-//file load for obstacles data.
-  std::cout<<"\n<!--Obstacles data loading at propagation constructor start-->"<<std::endl;
-
- ifstream inf("test.txt");
-
-
-
- vector <string> stringvector;
- string inStr;
-
- while(! inf.eof() ) {
-  inf >> inStr;
-  //inStr을 배열,vector,list등에 저장
-  stringvector.push_back(inStr);
- }
- inf.close();
-
-
- while(!stringvector.empty())
- {
-//	 std::cout << "<!--Flag1" << std::endl;
-	 obtacle new_ob;
-	 string current_str;
-	 char tok_str;
-	 string x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4;
-	 current_str = stringvector.back();
-
-	 //std::cout << stringvector.back() << std::endl;
-	 //while(current_str.find(tok_str, 0)!=string::npos)//??? 지금 당장은 좀 아니지??
-	 {
-		 tok_str = ':';
-//		 std::cout << current_str<<std::endl;
-		 x1 = current_str.substr(0, current_str.find(tok_str, 0));
-		 current_str = current_str.substr(current_str.find(tok_str, 0)+1);
-		 y1 =  current_str.substr(0, current_str.find(tok_str, 0));
-		 current_str = current_str.substr(current_str.find(tok_str, 0)+1);
-		 z1 =  current_str.substr(0, current_str.find(tok_str, 0));
-		 current_str = current_str.substr(current_str.find(tok_str, 0)+1);
-		 x2 = current_str.substr(0, current_str.find(tok_str, 0));
-		 current_str = current_str.substr(current_str.find(tok_str, 0)+1);
-		 y2 =  current_str.substr(0, current_str.find(tok_str, 0));
-		 current_str = current_str.substr(current_str.find(tok_str, 0)+1);
-		 z2 =  current_str.substr(0, current_str.find(tok_str, 0));
-		 current_str = current_str.substr(current_str.find(tok_str, 0)+1);
-		 x3 = current_str.substr(0, current_str.find(tok_str, 0));
-		 current_str = current_str.substr(current_str.find(tok_str, 0)+1);
-		 y3 =  current_str.substr(0, current_str.find(tok_str, 0));
-		 current_str = current_str.substr(current_str.find(tok_str, 0)+1);
-		 z3 =  current_str.substr(0, current_str.find(tok_str, 0));
-		 current_str = current_str.substr(current_str.find(tok_str, 0)+1);
-		 x4 = current_str.substr(0, current_str.find(tok_str, 0));
-		 current_str = current_str.substr(current_str.find(tok_str, 0)+1);
-		 y4 =  current_str.substr(0, current_str.find(tok_str, 0));
-		 current_str = current_str.substr(current_str.find(tok_str, 0)+1);
-		 z4 =  current_str.substr(0, current_str.find(tok_str, 0));
-		 current_str = current_str.substr(current_str.find(tok_str, 0)+1);
-		 //x1 = current_str.substr(current_str.find(tok_str, 0));
-		 //std::cout << "<!--Flag3" << std::endl;
-/*
-		 std::cout << x1 << " : ";
-		 std::cout << y1 << " : ";
-		 std::cout << z1 << " : ";
-		 std::cout << x2 << " : ";
-		 std::cout << y2 << " : ";
-		 std::cout << z2 << " : ";
-		 std::cout << x3 << " : ";
-		 std::cout << y3 << " : ";
-		 std::cout << z3 << " : ";
-		 std::cout << x4 << " : ";
-		 std::cout << y4 << " : ";
-		 std::cout << z4 << std::endl;
-*/
-                        std::stringstream ss;
-
-                        ss<<x1;
-                        ss>>new_ob.upper_x1;
-                        ss.clear();
-                        ss<<y1;
-                        ss>>new_ob.upper_y1;
-                        ss.clear();
-                        ss<<z1;
-                        ss>>new_ob.upper_z1;
-                        ss.clear();
-                        ss<<x2;
-                        ss>>new_ob.upper_x2;
-                        ss.clear();
-                        ss<<y2;
-                        ss>>new_ob.upper_y2;
-                        ss.clear();
-                        ss<<z2;
-                        ss>>new_ob.upper_z2;
-                        ss.clear();
-                        ss<<x3;
-                        ss>>new_ob.upper_x3;
-                        ss.clear();
-                        ss<<y3;
-                        ss>>new_ob.upper_y3;
-                        ss.clear();
-                        ss<<z3;
-                        ss>>new_ob.upper_z3;
-                        ss.clear();
-                        ss<<x4;
-                        ss>>new_ob.upper_x4;
-                        ss.clear();
-                        ss<<y4;
-                        ss>>new_ob.upper_y4;
-                        ss.clear();
-                        ss<<z4;
-                        ss>>new_ob.upper_z4;
-                        ss.clear();
-/*
-		 new_ob.upper_x1=stod(x1);
-		 new_ob.upper_y1=stod(y1);
-		 new_ob.upper_z1=stod(z1);
-		 new_ob.upper_x2=stod(x2);
-		 new_ob.upper_y2=stod(y2);
-		 new_ob.upper_z2=stod(z2);
-		 new_ob.upper_x3=stod(x3);
-		 new_ob.upper_y3=stod(y3);
-		 new_ob.upper_z3=stod(z3);
-		 new_ob.upper_x4=stod(x4);
-		 new_ob.upper_y4=stod(y4);
-		 new_ob.upper_z4=stod(z4);
-*/
-		 obstaclelist.push_back(new_ob);
-	 }
-	 stringvector.pop_back();
- }
-/*
- while (!obstaclelist.empty())
- {
-	 std::cout << obstaclelist.back().upper_x1 << ", " << obstaclelist.back().upper_y1 << ", " << obstaclelist.back().upper_z1 << ", "
-		 << obstaclelist.back().upper_x2 << ", " << obstaclelist.back().upper_y2 << ", " << obstaclelist.back().upper_z2 << ", "
-		 << obstaclelist.back().upper_x3 << ", " << obstaclelist.back().upper_y3 << ", " << obstaclelist.back().upper_z3 << ", "
-		 << obstaclelist.back().upper_x4 << ", " << obstaclelist.back().upper_y4 << ", " << obstaclelist.back().upper_z4
-		 << std::endl;
-	 obstaclelist.pop_back();
- }
-*/
-
-  std::cout<<"<!--Obstacles data loading at propagation constructor finish-->\n"<<std::endl;
 }
 
 PropagationLossModel::~PropagationLossModel ()
@@ -561,78 +405,6 @@ std::cout<<"<!--txPowerDbm distance short : "<<txPowerDbm<<"-->"<<std::endl;
       return txPowerDbm;
     }
 
-
- double u[5], v[5];
- double d_x1, d_y1, d_z1, d_x2, d_y2, d_z2, d_x3, d_y3, d_z3, d_x4, d_y4, d_z4;
-        int los_onoff=1;
-
-	d_x1=a->GetPosition ().x;
-	d_y1=a->GetPosition ().y;
-	d_z1=a->GetPosition ().z;
-	d_x2=b->GetPosition ().x;
-	d_y2=b->GetPosition ().y;
-	d_z2=b->GetPosition ().z;
-
-//매번 모든 장애물 4점 정보를 출력하도록 작성되어 있으나, 이 정보를 이용해서 장애물의 영향을 판별하는 공식으로 바꾸어야 함.
- for(unsigned int i=0;i<obstaclelist.size();i++)
- {
-/*
-	 std::cout << obstaclelist.at(i).upper_x1 << ", " << obstaclelist.at(i).upper_y1 << ", " << obstaclelist.at(i).upper_z1 << ", "
-		 << obstaclelist.at(i).upper_x2 << ", " << obstaclelist.at(i).upper_y2 << ", " << obstaclelist.at(i).upper_z2 << ", "
-		 << obstaclelist.at(i).upper_x3 << ", " << obstaclelist.at(i).upper_y3 << ", " << obstaclelist.at(i).upper_z3 << ", "
-		 << obstaclelist.at(i).upper_x4 << ", " << obstaclelist.at(i).upper_y4 << ", " << obstaclelist.at(i).upper_z4
-		 << std::endl;
-*/
-
-
-	d_x3=obstaclelist.at(i).upper_x1;
-	d_y3=obstaclelist.at(i).upper_y1;
-	d_z3=obstaclelist.at(i).upper_z1;
-	d_x4=obstaclelist.at(i).upper_x2;
-	d_y4=obstaclelist.at(i).upper_y2;
-	d_z4=obstaclelist.at(i).upper_z2;
-
-	u[0] = ((d_x4-d_x3)*(d_y1-d_y3)-(d_y4-d_y3)*(d_x1-d_x3)) / ((d_x2-d_x1)*(d_y4-d_y3)-(d_x4-d_x3)*(d_y2-d_y1));
-	v[0] = ((d_x2-d_x1)*(d_y1-d_y3)-(d_y2-d_y1)*(d_x1-d_x3)) / ((d_x2-d_x1)*(d_y4-d_y3)-(d_x4-d_x3)*(d_y2-d_y1));
-		
-        d_x3=obstaclelist.at(i).upper_x2;
-	d_y3=obstaclelist.at(i).upper_y2;
-	d_z3=obstaclelist.at(i).upper_z2;
-	d_x4=obstaclelist.at(i).upper_x4;
-	d_y4=obstaclelist.at(i).upper_y4;
-	d_z4=obstaclelist.at(i).upper_z4;
-
-	u[1] = ((d_x4-d_x3)*(d_y1-d_y3)-(d_y4-d_y3)*(d_x1-d_x3)) / ((d_x2-d_x1)*(d_y4-d_y3)-(d_x4-d_x3)*(d_y2-d_y1));
-	v[1] = ((d_x2-d_x1)*(d_y1-d_y3)-(d_y2-d_y1)*(d_x1-d_x3)) / ((d_x2-d_x1)*(d_y4-d_y3)-(d_x4-d_x3)*(d_y2-d_y1));
-	
-	d_x3=obstaclelist.at(i).upper_x3;
-	d_y3=obstaclelist.at(i).upper_y3;
-	d_z3=obstaclelist.at(i).upper_z3;
-	d_x4=obstaclelist.at(i).upper_x4;
-	d_y4=obstaclelist.at(i).upper_y4;
-	d_z4=obstaclelist.at(i).upper_z4;
-
-	u[2] = ((d_x4-d_x3)*(d_y1-d_y3)-(d_y4-d_y3)*(d_x1-d_x3)) / ((d_x2-d_x1)*(d_y4-d_y3)-(d_x4-d_x3)*(d_y2-d_y1));
-	v[2] = ((d_x2-d_x1)*(d_y1-d_y3)-(d_y2-d_y1)*(d_x1-d_x3)) / ((d_x2-d_x1)*(d_y4-d_y3)-(d_x4-d_x3)*(d_y2-d_y1));
-
-	d_x3=obstaclelist.at(i).upper_x2;
-	d_y3=obstaclelist.at(i).upper_y2;
-	d_z3=obstaclelist.at(i).upper_z2;
-	d_x4=obstaclelist.at(i).upper_x1;
-	d_y4=obstaclelist.at(i).upper_y1;
-	d_z4=obstaclelist.at(i).upper_z1;
-
-	u[3] = ((d_x4-d_x3)*(d_y1-d_y3)-(d_y4-d_y3)*(d_x1-d_x3)) / ((d_x2-d_x1)*(d_y4-d_y3)-(d_x4-d_x3)*(d_y2-d_y1));
-	v[3] = ((d_x2-d_x1)*(d_y1-d_y3)-(d_y2-d_y1)*(d_x1-d_x3)) / ((d_x2-d_x1)*(d_y4-d_y3)-(d_x4-d_x3)*(d_y2-d_y1));
-
-        v[4] = d_z1+d_z2+d_z3+d_z4;
-
-
-	 for(int i=0;i<4;i++)
-		if(u[i]>0&&u[i]<1&&v[i]>0&&v[i]<1)
-                        los_onoff=0;
- }
-
   // Set the height of the Tx and Rx antennae
   double txAntHeight = a->GetPosition ().z + m_heightAboveZ;// +((a->GetPosition ().x)-(a->GetPosition ().x/10));
   double rxAntHeight = b->GetPosition ().z + m_heightAboveZ;// +((b->GetPosition ().x)-(b->GetPosition ().x/10));
@@ -646,7 +418,7 @@ std::cout<<"<!--txPowerDbm distance short : "<<txPowerDbm<<"-->"<<std::endl;
 
   double dCross = (4 * M_PI * txAntHeight * rxAntHeight) / m_lambda;
   double tmp = 0;
-  if (false)//distance <= dCross)
+  if (distance <= dCross)
     {
       // We use Friis
       double numerator = m_lambda * m_lambda;
@@ -665,20 +437,8 @@ std::cout<<"<!--txPowerDbm distance short : "<<txPowerDbm<<"-->"<<std::endl;
       tmp = distance * distance;
       double rayDenominator = tmp * tmp * m_systemLoss;
       double rayPr = 10 * std::log10 (rayNumerator / rayDenominator);
-        if(los_onoff==0)
-                rayPr-=100;
       NS_LOG_DEBUG ("distance=" << distance << "m, attenuation coefficient=" << rayPr << "dB");
-std::cout<<"<!--txPowerDbm Two-Ray : "<<txPowerDbm + rayPr<<"-->"<<"\nSender : "<<a->GetPosition ().x<<" : "<<a->GetPosition ().y<<" Receiver : "<<b->GetPosition ().x<<" : "<<b->GetPosition ().y<<" LOS onoff : "<< los_onoff <<std::endl;//add
-
-
-
-	d_x1=a->GetPosition ().x;
-	d_y1=a->GetPosition ().y;
-	d_z1=a->GetPosition ().z;
-	d_x2=b->GetPosition ().x;
-	d_y2=b->GetPosition ().y;
-	d_z2=b->GetPosition ().z;
-
+//std::cout<<"<!--txPowerDbm Two-Ray : "<<txPowerDbm + rayPr<<"-->"<<std::endl;
       return txPowerDbm + rayPr;
 
     }

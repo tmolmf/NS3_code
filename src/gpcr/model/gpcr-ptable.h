@@ -134,6 +134,8 @@ private:
   // Process layer 2 TX error notification
   void ProcessTxError (WifiMacHeader const&);
 
+//  double aveDist;
+
 
 
 

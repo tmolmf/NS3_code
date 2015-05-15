@@ -75,7 +75,7 @@ struct DeferredRouteOutputTag : public Tag
 
 
 /********** Miscellaneous constants **********/
-Ptr<UniformRandomVariable> var = CreateObject<UniformRandomVariable> ();
+Ptr<UniformRandomVariable> var = CreateObject<UniformRandomVariable> ();//for solve JITTER problem
 /*
 /// Maximum allowed jitter.
 #define GPCR_MAXJITTER          (HelloInterval.GetSeconds () / 2)
@@ -512,6 +512,7 @@ RoutingProtocol::RecvGPCR (Ptr<Socket> socket)
   Position.x = hdr.GetOriginPosx ();
   Position.y = hdr.GetOriginPosy ();
   uint8_t isCoordinator = hdr.GetIsCoordinator ();
+std::cout<<"<!-- ttm mess--> "<<hdr.Getttm_mess()<<" "<<hdr.GetOriginPosx ()<<" "<<hdr.GetOriginPosy ()<<" "<<std::endl;
 
   InetSocketAddress inetSourceAddr = InetSocketAddress::ConvertFrom (sourceAddress);
   Ipv4Address sender = inetSourceAddr.GetIpv4 ();
@@ -697,17 +698,21 @@ RoutingProtocol::SendHello ()
   NS_LOG_FUNCTION (this);
   double positionX;
   double positionY;
+  double positionZ;
 
   Ptr<MobilityModel> MM = m_ipv4->GetObject<MobilityModel> ();
 
   positionX = MM->GetPosition ().x;
   positionY = MM->GetPosition ().y;
+  positionZ = MM->GetPosition ().z;
+std::cout << "SendHello position : "<<positionX<<", "<<positionY<<", "<<positionZ << std::endl;
 
   for (std::map<Ptr<Socket>, Ipv4InterfaceAddress>::const_iterator j = m_socketAddresses.begin (); j != m_socketAddresses.end (); ++j)
     {
       Ptr<Socket> socket = j->first;
       Ipv4InterfaceAddress iface = j->second;
-      HelloHeader helloHeader (((uint64_t) positionX),((uint64_t) positionY), m_neighbors.AmICoordinator ()); 
+      HelloHeader helloHeader (((uint64_t) positionX),((uint64_t) positionY), m_neighbors.AmICoordinator (), ((uint64_t)positionX%10)); 
+//        helloHeader.Setttm_mess(11);
 
       Ptr<Packet> packet = Create<Packet> ();
       packet->AddHeader (helloHeader);

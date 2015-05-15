@@ -29,11 +29,6 @@
 #include "ns3/random-variable-stream.h"
 #include <map>
 
-struct obtacle{
-	//double under_x1,under_y1,under_z1,under_x2,under_y2,under_z2,under_x3,under_y3,under_z3,under_x4,under_y4,under_z4;
-	double upper_x1,upper_y1,upper_z1,upper_x2,upper_y2,upper_z2,upper_x3,upper_y3,upper_z3,upper_x4,upper_y4,upper_z4;
-};
-
 namespace ns3 {
 
 /**
@@ -60,7 +55,6 @@ public:
    * \return the object TypeId
    */
   static TypeId GetTypeId (void);
- std::vector <obtacle> obstaclelist;
 
   PropagationLossModel ();
   virtual ~PropagationLossModel ();
