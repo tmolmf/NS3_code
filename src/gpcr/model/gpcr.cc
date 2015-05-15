@@ -158,7 +158,6 @@ bool RoutingProtocol::RouteInput (Ptr<const Packet> p, const Ipv4Header &header,
                                   UnicastForwardCallback ucb, MulticastForwardCallback mcb,
                                   LocalDeliverCallback lcb, ErrorCallback ecb)
 {
-
 NS_LOG_FUNCTION (this << p->GetUid () << header.GetDestination () << idev->GetAddress ());
   if (m_socketAddresses.empty ())
     {
@@ -512,7 +511,7 @@ RoutingProtocol::RecvGPCR (Ptr<Socket> socket)
   Position.x = hdr.GetOriginPosx ();
   Position.y = hdr.GetOriginPosy ();
   uint8_t isCoordinator = hdr.GetIsCoordinator ();
-std::cout<<"<!-- ttm mess--> "<<hdr.Getttm_mess()<<" "<<hdr.GetOriginPosx ()<<" "<<hdr.GetOriginPosy ()<<" "<<std::endl;
+//std::cout<<"<!-- ttm mess--> "<<hdr.Getttm_mess()<<" "<<hdr.GetOriginPosx ()<<" "<<hdr.GetOriginPosy ()<<" "<<std::endl;
 
   InetSocketAddress inetSourceAddr = InetSocketAddress::ConvertFrom (sourceAddress);
   Ipv4Address sender = inetSourceAddr.GetIpv4 ();
@@ -998,6 +997,7 @@ Ptr<Ipv4Route>
 RoutingProtocol::RouteOutput (Ptr<Packet> p, const Ipv4Header &header,
                               Ptr<NetDevice> oif, Socket::SocketErrno &sockerr)
 {
+std::cout<<std::endl;
   NS_LOG_FUNCTION (this << header << (oif ? oif->GetIfIndex () : 0));
 
   if (!p)
