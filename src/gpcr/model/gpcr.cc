@@ -204,10 +204,15 @@ NS_LOG_FUNCTION (this << p->GetUid () << header.GetDestination () << idev->GetAd
       if (dst != m_ipv4->GetAddress (1, 0).GetBroadcast ())
         {
           NS_LOG_LOGIC ("Unicast local delivery to " << dst);
+Time ttm_time = Simulator::Now ();
+        std::cout<<packet->GetUid()<<" receive Time : "<<ttm_time.GetSeconds()<<" source : "<<origin<<" destination : "<<dst<<std::endl;
+
         }
       else
         {
           NS_LOG_LOGIC ("Broadcast local delivery to " << dst);
+Time ttm_time = Simulator::Now ();
+        std::cout<<packet->GetUid()<<" receive Time : "<<ttm_time.GetSeconds()<<" source : "<<origin<<" destination : "<<dst<<std::endl;
         }
 
       lcb (packet, header, iif);
@@ -819,7 +824,7 @@ RoutingProtocol::AddHeaders (Ptr<Packet> p, Ipv4Address source, Ipv4Address dest
 {
 
   NS_LOG_FUNCTION (this << " source " << source << " destination " << destination);
- 
+
   Vector myPos;
   Ptr<MobilityModel> MM = m_ipv4->GetObject<MobilityModel> ();
   myPos.x = MM->GetPosition ().x;
@@ -851,6 +856,9 @@ RoutingProtocol::AddHeaders (Ptr<Packet> p, Ipv4Address source, Ipv4Address dest
   p->AddHeader (posHeader);
   TypeHeader tHeader (GPCRTYPE_POS);
   p->AddHeader (tHeader);
+
+Time ttm_time = Simulator::Now ();
+std::cout<<p->GetUid()<<" forwarding Time : "<<ttm_time.GetSeconds()<<" source : "<<source<<" destination : "<<destination<<std::endl;
 
   m_downTarget (p, source, destination, protocol, route);
 
@@ -999,7 +1007,6 @@ RoutingProtocol::RouteOutput (Ptr<Packet> p, const Ipv4Header &header,
 {
 std::cout<<std::endl;
   NS_LOG_FUNCTION (this << header << (oif ? oif->GetIfIndex () : 0));
-
   if (!p)
     {
       return LoopbackRoute (header, oif);     // later
@@ -1015,13 +1022,14 @@ std::cout<<std::endl;
   Ptr<Ipv4Route> route = Create<Ipv4Route> ();
   Ipv4Address dst = header.GetDestination ();
 
+
+
   Vector dstPos = Vector (1, 0, 0);
 
   if (!(dst == m_ipv4->GetAddress (1, 0).GetBroadcast ()))
     {
       dstPos = m_locationService->GetPosition (dst);
     }
-
   if (CalculateDistance (dstPos, m_locationService->GetInvalidPosition ()) == 0 && m_locationService->IsInSearch (dst))
     {
       DeferredRouteOutputTag tag;
@@ -1068,6 +1076,7 @@ std::cout<<std::endl;
       route->SetDestination (header.GetDestination ());
       NS_ASSERT (route != 0);
       NS_LOG_DEBUG ("Exist route to " << route->GetDestination () << " from interface " << route->GetSource ());
+
       if (oif != 0 && route->GetOutputDevice () != oif)
         {
           NS_LOG_DEBUG ("Output device doesn't match. Dropped.");
@@ -1083,6 +1092,7 @@ std::cout<<std::endl;
         {
           p->AddPacketTag (tag); 
         }
+std::cout<<"Flag 3"<<std::endl;
       return LoopbackRoute (header, oif);     //in RouteInput the recovery-mode is called
     }
 
