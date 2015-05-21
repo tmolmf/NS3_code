@@ -2,18 +2,18 @@
 /*
 
  */
-#ifndef GPCR_H
-#define GPCR_H
+#ifndef GPSR_H
+#define GPSR_H
 
-#include "gpcr-ptable.h"
-#include "gpcr-packet.h"
-#include "gpcr-rqueue.h"
+#include "gpsr-ptable.h"
 #include "ns3/node.h"
+#include "gpsr-packet.h"
 #include "ns3/ipv4-routing-protocol.h"
 #include "ns3/ipv4-interface.h"
 #include "ns3/ipv4-l3-protocol.h"
 #include "ns3/ip-l4-protocol.h"
 #include "ns3/mobility-model.h"
+#include "gpsr-rqueue.h"
 
 #include "ns3/ipv4-header.h"
 #include "ns3/ipv4-address.h"
@@ -25,17 +25,17 @@
 #include <complex>
 
 namespace ns3 {
-namespace gpcr {
+namespace gpsr {
 /**
- * \ingroup gpcr
+ * \ingroup gpsr
  *
- * \brief GPCR routing protocol
+ * \brief GPSR routing protocol
  */
 class RoutingProtocol : public Ipv4RoutingProtocol
 {
 public:
   static TypeId GetTypeId (void);
-  static const uint32_t GPCR_PORT;
+  static const uint32_t GPSR_PORT;
 
   /// c-tor                        
   RoutingProtocol ();
@@ -57,8 +57,8 @@ public:
   virtual void NotifyAddAddress (uint32_t interface, Ipv4InterfaceAddress address);
   virtual void NotifyRemoveAddress (uint32_t interface, Ipv4InterfaceAddress address);
   virtual void SetIpv4 (Ptr<Ipv4> ipv4);
-  virtual void RecvGPCR (Ptr<Socket> socket);
-  virtual void UpdateRouteToNeighbor (Ipv4Address sender, Ipv4Address receiver, Vector Pos, uint8_t isCoordinator, uint8_t ishigher);
+  virtual void RecvGPSR (Ptr<Socket> socket);
+  virtual void UpdateRouteToNeighbor (Ipv4Address sender, Ipv4Address receiver, Vector Pos);
   virtual void SendHello ();
   virtual bool IsMyOwnAddress (Ipv4Address src);
 
@@ -82,8 +82,8 @@ public:
   uint16_t m_rreqCount;
   Time HelloInterval;
 
-  void SetDownTarget (IpL4Protocol::DownTargetCallback callback);
-  IpL4Protocol::DownTargetCallback GetDownTarget (void) const;
+  void SetDownTarget (Ipv4L4Protocol::DownTargetCallback callback);
+  Ipv4L4Protocol::DownTargetCallback GetDownTarget (void) const;
 
   virtual void PrintRoutingTable (ns3::Ptr<ns3::OutputStreamWrapper>) const
   {
@@ -129,11 +129,11 @@ private:
   std::list<Ipv4Address> m_queuedAddresses;
   Ptr<LocationService> m_locationService;
 
-  IpL4Protocol::DownTargetCallback m_downTarget;
+  Ipv4L4Protocol::DownTargetCallback m_downTarget;
 
 
 
 };
 }
 }
-#endif /* GPCRROUTINGPROTOCOL_H */
+#endif /* GPSRROUTINGPROTOCOL_H */

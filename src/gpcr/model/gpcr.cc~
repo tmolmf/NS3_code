@@ -205,14 +205,14 @@ NS_LOG_FUNCTION (this << p->GetUid () << header.GetDestination () << idev->GetAd
         {
           NS_LOG_LOGIC ("Unicast local delivery to " << dst);
 Time ttm_time = Simulator::Now ();
-        std::cout<<packet->GetUid()<<"// receive Time : //"<<ttm_time.GetSeconds()<<"// source : //"<<origin<<"// destination : //"<<dst<<std::endl;
+        std::cout<<packet->GetUid()<<"  receive Time :  "<<ttm_time.GetSeconds()<<"     source :        "<<origin<<"    destination :   "<<dst<<std::endl;
 
         }
       else
         {
           NS_LOG_LOGIC ("Broadcast local delivery to " << dst);
 Time ttm_time = Simulator::Now ();
-        std::cout<<packet->GetUid()<<"// receive Time : //"<<ttm_time.GetSeconds()<<"// source : //"<<origin<<"// destination : //"<<dst<<std::endl;
+        std::cout<<packet->GetUid()<<"  receive Time :  "<<ttm_time.GetSeconds()<<"     source :        "<<origin<<"    destination :   "<<dst<<std::endl;
         }
 
       lcb (packet, header, iif);
@@ -862,7 +862,7 @@ RoutingProtocol::AddHeaders (Ptr<Packet> p, Ipv4Address source, Ipv4Address dest
   p->AddHeader (tHeader);
 
 Time ttm_time = Simulator::Now ();
-std::cout<<p->GetUid()<<"// forwarding Time : //"<<ttm_time.GetSeconds()<<"// source : //"<<source<<"// destination : //"<<destination<<std::endl;
+std::cout<<p->GetUid()<<"       forwarding Time :       "<<ttm_time.GetSeconds()<<"     source :        "<<source<<"    destination :   "<<destination<<std::endl;
 
   m_downTarget (p, source, destination, protocol, route);
 

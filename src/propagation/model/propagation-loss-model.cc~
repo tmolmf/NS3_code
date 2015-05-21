@@ -569,7 +569,7 @@ TwoRayGroundPropagationLossModel::DoCalcRxPower (double txPowerDbm,
 //std::cout<<"<!--txPowerDbm distance short : "<<txPowerDbm<<"-->"<<std::endl;
       return txPowerDbm;
     }
-//std::cout<<"<!--txPowerDbm distance : "<<distance<<"-->"<<std::endl;
+std::cout<<"<!--txPowerDbm distance : "<<distance<<"-->"<<std::endl;
 
 
  double u[5], v[5];

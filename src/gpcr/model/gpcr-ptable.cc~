@@ -352,7 +352,6 @@ PositionTable::BestNeighbor (Vector position/*target*/, Vector nodePos/*my pos*/
     }
 
   NS_LOG_DEBUG("No Coordinator found");
-      std::cout<<"No Coordinator found"<<std::endl;
 
   bestFoundID = m_table.begin ()->first;
   double bestFoundDistance = CalculateDistance (m_table.begin ()->second.first, nodePos);

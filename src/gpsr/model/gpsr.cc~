@@ -1,12 +1,12 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /*
- * GPCR
+ * GPSR
  *
  */
 #define NS_LOG_APPEND_CONTEXT                                           \
   if (m_ipv4) { std::clog << "[node " << m_ipv4->GetObject<Node> ()->GetId () << "] "; }
 
-#include "gpcr.h"
+#include "gpsr.h"
 #include "ns3/log.h"
 #include "ns3/boolean.h"
 #include "ns3/random-variable-stream.h"
@@ -19,14 +19,14 @@
 #include <limits>
 
 
-#define GPCR_LS_GOD 0
+#define GPSR_LS_GOD 0
 
-#define GPCR_LS_RLS 1
+#define GPSR_LS_RLS 1
 
-NS_LOG_COMPONENT_DEFINE ("GpcrRoutingProtocol");
+NS_LOG_COMPONENT_DEFINE ("GpsrRoutingProtocol");
 
 namespace ns3 {
-namespace gpcr {
+namespace gpsr {
 
 
 
@@ -42,7 +42,7 @@ struct DeferredRouteOutputTag : public Tag
 
   static TypeId GetTypeId ()
   {
-    static TypeId tid = TypeId ("ns3::gpcr::DeferredRouteOutputTag").SetParent<Tag> ();
+    static TypeId tid = TypeId ("ns3::gpsr::DeferredRouteOutputTag").SetParent<Tag> ();
     return tid;
   }
 
@@ -75,26 +75,20 @@ struct DeferredRouteOutputTag : public Tag
 
 
 /********** Miscellaneous constants **********/
-Ptr<UniformRandomVariable> var = CreateObject<UniformRandomVariable> ();//for solve JITTER problem
-/*
-/// Maximum allowed jitter.
-#define GPCR_MAXJITTER          (HelloInterval.GetSeconds () / 2)
-/// Random number between [(-GPCR_MAXJITTER)-GPCR_MAXJITTER] used to jitter HELLO packet transmission.
-#define JITTER (Seconds (UniformRandomVariable ().GetValue (-GPCR_MAXJITTER, GPCR_MAXJITTER)))
-#define FIRST_JITTER (Seconds(UniformRandomVariable().GetValue(0, GPCR_MAXJITTER))) //first Hello can not be in the past, used only on SetIpv4
-*/
+Ptr<UniformRandomVariable> var = CreateObject<UniformRandomVariable> ();
 
 /// Maximum allowed jitter.
-#define GPCR_MAXJITTER          (HelloInterval.GetSeconds () / 2)
-/// Random number between [(-GPCR_MAXJITTER)-GPCR_MAXJITTER] used to jitter HELLO packet transmission.
-#define JITTER (Seconds (var->GetValue (-GPCR_MAXJITTER, GPCR_MAXJITTER)))
-#define FIRST_JITTER (Seconds(var->GetValue(0, GPCR_MAXJITTER))) //first Hello can not be in the past, used only on SetIpv4
+#define GPSR_MAXJITTER          (HelloInterval.GetSeconds () / 2)
+/// Random number between [(-GPSR_MAXJITTER)-GPSR_MAXJITTER] used to jitter HELLO packet transmission.
+#define JITTER (Seconds (var->GetValue (-GPSR_MAXJITTER, GPSR_MAXJITTER))) 
+#define FIRST_JITTER (Seconds (var->GetValue (0, GPSR_MAXJITTER))) //first Hello can not be in the past, used only on SetIpv4
+
 
 
 NS_OBJECT_ENSURE_REGISTERED (RoutingProtocol);
 
-/// UDP Port for GPCR control traffic, not defined by IANA yet
-const uint32_t RoutingProtocol::GPCR_PORT = 666;
+/// UDP Port for GPSR control traffic, not defined by IANA yet
+const uint32_t RoutingProtocol::GPSR_PORT = 666;
 
 RoutingProtocol::RoutingProtocol ()
   : HelloInterval (Seconds (1)),
@@ -111,7 +105,7 @@ RoutingProtocol::RoutingProtocol ()
 TypeId
 RoutingProtocol::GetTypeId (void)
 {
-  static TypeId tid = TypeId ("ns3::gpcr::RoutingProtocol")
+  static TypeId tid = TypeId ("ns3::gpsr::RoutingProtocol")
     .SetParent<Ipv4RoutingProtocol> ()
     .AddConstructor<RoutingProtocol> ()
     .AddAttribute ("HelloInterval", "HELLO messages emission interval.",
@@ -119,10 +113,10 @@ RoutingProtocol::GetTypeId (void)
                    MakeTimeAccessor (&RoutingProtocol::HelloInterval),
                    MakeTimeChecker ())
     .AddAttribute ("LocationServiceName", "Indicates wich Location Service is enabled",
-                   EnumValue (GPCR_LS_GOD),
+                   EnumValue (GPSR_LS_GOD),
                    MakeEnumAccessor (&RoutingProtocol::LocationServiceName),
-                   MakeEnumChecker (GPCR_LS_GOD, "GOD",
-                                    GPCR_LS_RLS, "RLS"))
+                   MakeEnumChecker (GPSR_LS_GOD, "GOD",
+                                    GPSR_LS_RLS, "RLS"))
     .AddAttribute ("PerimeterMode ", "Indicates if PerimeterMode is enabled",
                    BooleanValue (false),
                    MakeBooleanAccessor (&RoutingProtocol::PerimeterMode),
@@ -158,10 +152,11 @@ bool RoutingProtocol::RouteInput (Ptr<const Packet> p, const Ipv4Header &header,
                                   UnicastForwardCallback ucb, MulticastForwardCallback mcb,
                                   LocalDeliverCallback lcb, ErrorCallback ecb)
 {
+
 NS_LOG_FUNCTION (this << p->GetUid () << header.GetDestination () << idev->GetAddress ());
   if (m_socketAddresses.empty ())
     {
-      NS_LOG_LOGIC ("No gpcr interfaces");
+      NS_LOG_LOGIC ("No gpsr interfaces");
       return false;
     }
   NS_ASSERT (m_ipv4 != 0);
@@ -187,15 +182,15 @@ NS_LOG_FUNCTION (this << p->GetUid () << header.GetDestination () << idev->GetAd
     {
 
       Ptr<Packet> packet = p->Copy ();
-      TypeHeader tHeader (GPCRTYPE_POS);
+      TypeHeader tHeader (GPSRTYPE_POS);
       packet->RemoveHeader (tHeader);
       if (!tHeader.IsValid ())
         {
-          NS_LOG_DEBUG ("GPCR message " << packet->GetUid () << " with unknown type received: " << tHeader.Get () << ". Ignored");
+          NS_LOG_DEBUG ("GPSR message " << packet->GetUid () << " with unknown type received: " << tHeader.Get () << ". Ignored");
           return false;
         }
       
-      if (tHeader.Get () == GPCRTYPE_POS)
+      if (tHeader.Get () == GPSRTYPE_POS)
         {
           PositionHeader phdr;
           packet->RemoveHeader (phdr);
@@ -204,15 +199,10 @@ NS_LOG_FUNCTION (this << p->GetUid () << header.GetDestination () << idev->GetAd
       if (dst != m_ipv4->GetAddress (1, 0).GetBroadcast ())
         {
           NS_LOG_LOGIC ("Unicast local delivery to " << dst);
-Time ttm_time = Simulator::Now ();
-        std::cout<<packet->GetUid()<<"// receive Time : //"<<ttm_time.GetSeconds()<<"// source : //"<<origin<<"// destination : //"<<dst<<std::endl;
-
         }
       else
         {
           NS_LOG_LOGIC ("Broadcast local delivery to " << dst);
-Time ttm_time = Simulator::Now ();
-        std::cout<<packet->GetUid()<<"// receive Time : //"<<ttm_time.GetSeconds()<<"// source : //"<<origin<<"// destination : //"<<dst<<std::endl;
         }
 
       lcb (packet, header, iif);
@@ -333,14 +323,14 @@ RoutingProtocol::SendPacketFromQueue (Ipv4Address dst)
             UnicastForwardCallback ucb = queueEntry.GetUnicastForwardCallback ();
             Ipv4Header header = queueEntry.GetIpv4Header ();
             
-            TypeHeader tHeader (GPCRTYPE_POS);
+            TypeHeader tHeader (GPSRTYPE_POS);
             p->RemoveHeader (tHeader);
             if (!tHeader.IsValid ())
               {
-                NS_LOG_DEBUG ("GPCR message " << p->GetUid () << " with unknown type received: " << tHeader.Get () << ". Drop");
+                NS_LOG_DEBUG ("GPSR message " << p->GetUid () << " with unknown type received: " << tHeader.Get () << ". Drop");
                 return false;     // drop
               }
-            if (tHeader.Get () == GPCRTYPE_POS)
+            if (tHeader.Get () == GPSRTYPE_POS)
               {
                 PositionHeader hdr;
                 p->RemoveHeader (hdr);
@@ -405,14 +395,14 @@ RoutingProtocol::RecoveryMode(Ipv4Address dst, Ptr<Packet> p, UnicastForwardCall
   myPos.x = positionX;
   myPos.y = positionY;  
 
-  TypeHeader tHeader (GPCRTYPE_POS);
+  TypeHeader tHeader (GPSRTYPE_POS);
   p->RemoveHeader (tHeader);
   if (!tHeader.IsValid ())
     {
-      NS_LOG_DEBUG ("GPCR message " << p->GetUid () << " with unknown type received: " << tHeader.Get () << ". Drop");
+      NS_LOG_DEBUG ("GPSR message " << p->GetUid () << " with unknown type received: " << tHeader.Get () << ". Drop");
       return;     // drop
     }
-  if (tHeader.Get () == GPCRTYPE_POS)
+  if (tHeader.Get () == GPSRTYPE_POS)
     {
       PositionHeader hdr;
       p->RemoveHeader (hdr);
@@ -457,7 +447,7 @@ RoutingProtocol::NotifyInterfaceUp (uint32_t interface)
   Ptr<Ipv4L3Protocol> l3 = m_ipv4->GetObject<Ipv4L3Protocol> ();
   if (l3->GetNAddresses (interface) > 1)
     {
-      NS_LOG_WARN ("GPCR does not work with more then one address per each interface.");
+      NS_LOG_WARN ("GPSR does not work with more then one address per each interface.");
     }
   Ipv4InterfaceAddress iface = l3->GetAddress (interface, 0);
   if (iface.GetLocal () == Ipv4Address ("127.0.0.1"))
@@ -469,9 +459,9 @@ RoutingProtocol::NotifyInterfaceUp (uint32_t interface)
   Ptr<Socket> socket = Socket::CreateSocket (GetObject<Node> (),
                                              UdpSocketFactory::GetTypeId ());
   NS_ASSERT (socket != 0);
-  socket->SetRecvCallback (MakeCallback (&RoutingProtocol::RecvGPCR, this));
-  socket->Bind (InetSocketAddress (Ipv4Address::GetAny (), GPCR_PORT));//error order change 1
-  socket->BindToNetDevice (l3->GetNetDevice (interface));//error order change 1
+  socket->SetRecvCallback (MakeCallback (&RoutingProtocol::RecvGPSR, this));
+  socket->BindToNetDevice (l3->GetNetDevice (interface));
+  socket->Bind (InetSocketAddress (Ipv4Address::GetAny (), GPSR_PORT));
   socket->SetAllowBroadcast (true);
   socket->SetAttribute ("IpTtl", UintegerValue (1));
   m_socketAddresses.insert (std::make_pair (socket, iface));
@@ -496,17 +486,17 @@ RoutingProtocol::NotifyInterfaceUp (uint32_t interface)
 
 
 void
-RoutingProtocol::RecvGPCR (Ptr<Socket> socket)
+RoutingProtocol::RecvGPSR (Ptr<Socket> socket)
 {
   NS_LOG_FUNCTION (this << socket);
   Address sourceAddress;
   Ptr<Packet> packet = socket->RecvFrom (sourceAddress);
 
-  TypeHeader tHeader (GPCRTYPE_HELLO);
+  TypeHeader tHeader (GPSRTYPE_HELLO);
   packet->RemoveHeader (tHeader);
   if (!tHeader.IsValid ())
     {
-      NS_LOG_DEBUG ("GPCR message " << packet->GetUid () << " with unknown type received: " << tHeader.Get () << ". Ignored");
+      NS_LOG_DEBUG ("GPSR message " << packet->GetUid () << " with unknown type received: " << tHeader.Get () << ". Ignored");
       return;
     }
 
@@ -515,25 +505,20 @@ RoutingProtocol::RecvGPCR (Ptr<Socket> socket)
   Vector Position;
   Position.x = hdr.GetOriginPosx ();
   Position.y = hdr.GetOriginPosy ();
-  Position.z = hdr.GetOriginPosz ();
-std::cout<<"Position.x : "<<hdr.GetOriginPosx ()<<" Position.y : "<<hdr.GetOriginPosy ()<<" Position.z : "<<hdr.GetOriginPosz ()<<std::endl;
-  uint8_t isCoordinator = hdr.GetIsCoordinator ();
-  uint8_t ishigher = hdr.GetIsHigher ();
-//std::cout<<"<!-- ttm mess--> "<<hdr.Getttm_mess()<<" "<<hdr.GetOriginPosx ()<<" "<<hdr.GetOriginPosy ()<<" "<<std::endl;
-
   InetSocketAddress inetSourceAddr = InetSocketAddress::ConvertFrom (sourceAddress);
   Ipv4Address sender = inetSourceAddr.GetIpv4 ();
   Ipv4Address receiver = m_socketAddresses[socket].GetLocal ();
 
-  UpdateRouteToNeighbor (sender, receiver, Position, isCoordinator, ishigher);
+  UpdateRouteToNeighbor (sender, receiver, Position);
 
 }
 
 
 void
-RoutingProtocol::UpdateRouteToNeighbor (Ipv4Address sender, Ipv4Address receiver, Vector Pos, uint8_t isCoordinator, uint8_t ishigher)
+RoutingProtocol::UpdateRouteToNeighbor (Ipv4Address sender, Ipv4Address receiver, Vector Pos)
 {
-  m_neighbors.AddEntry (sender, Pos, isCoordinator, ishigher);
+  m_neighbors.AddEntry (sender, Pos);
+
 }
 
 
@@ -564,7 +549,7 @@ RoutingProtocol::NotifyInterfaceDown (uint32_t interface)
   m_socketAddresses.erase (socket);
   if (m_socketAddresses.empty ())
     {
-      NS_LOG_LOGIC ("No gpcr interfaces");
+      NS_LOG_LOGIC ("No gpsr interfaces");
       m_neighbors.Clear ();
       m_locationService->Clear ();
       return;
@@ -614,10 +599,10 @@ void RoutingProtocol::NotifyAddAddress (uint32_t interface, Ipv4InterfaceAddress
           Ptr<Socket> socket = Socket::CreateSocket (GetObject<Node> (),
                                                      UdpSocketFactory::GetTypeId ());
           NS_ASSERT (socket != 0);
-          socket->SetRecvCallback (MakeCallback (&RoutingProtocol::RecvGPCR,this));
+          socket->SetRecvCallback (MakeCallback (&RoutingProtocol::RecvGPSR,this));
           socket->BindToNetDevice (l3->GetNetDevice (interface));
           // Bind to any IP address so that broadcasts can be received
-          socket->Bind (InetSocketAddress (Ipv4Address::GetAny (), GPCR_PORT));
+          socket->Bind (InetSocketAddress (Ipv4Address::GetAny (), GPSR_PORT));
           socket->SetAllowBroadcast (true);
           m_socketAddresses.insert (std::make_pair (socket, iface));
 
@@ -626,7 +611,7 @@ void RoutingProtocol::NotifyAddAddress (uint32_t interface, Ipv4InterfaceAddress
     }
   else
     {
-      NS_LOG_LOGIC ("GPCR does not work with more then one address per each interface. Ignore added address");
+      NS_LOG_LOGIC ("GPSR does not work with more then one address per each interface. Ignore added address");
     }
 }
 
@@ -647,9 +632,9 @@ RoutingProtocol::NotifyRemoveAddress (uint32_t i, Ipv4InterfaceAddress address)
           Ptr<Socket> socket = Socket::CreateSocket (GetObject<Node> (),
                                                      UdpSocketFactory::GetTypeId ());
           NS_ASSERT (socket != 0);
-          socket->SetRecvCallback (MakeCallback (&RoutingProtocol::RecvGPCR, this));
+          socket->SetRecvCallback (MakeCallback (&RoutingProtocol::RecvGPSR, this));
           // Bind to any IP address so that broadcasts can be received
-          socket->Bind (InetSocketAddress (Ipv4Address::GetAny (), GPCR_PORT));
+          socket->Bind (InetSocketAddress (Ipv4Address::GetAny (), GPSR_PORT));
           socket->SetAllowBroadcast (true);
           m_socketAddresses.insert (std::make_pair (socket, iface));
 
@@ -659,7 +644,7 @@ RoutingProtocol::NotifyRemoveAddress (uint32_t i, Ipv4InterfaceAddress address)
         }
       if (m_socketAddresses.empty ())
         {
-          NS_LOG_LOGIC ("No gpcr interfaces");
+          NS_LOG_LOGIC ("No gpsr interfaces");
           m_neighbors.Clear ();
           m_locationService->Clear ();
           return;
@@ -667,22 +652,19 @@ RoutingProtocol::NotifyRemoveAddress (uint32_t i, Ipv4InterfaceAddress address)
     }
   else
     {
-      NS_LOG_LOGIC ("Remove address not participating in GPCR operation");
+      NS_LOG_LOGIC ("Remove address not participating in GPSR operation");
     }
 }
 
 void
 RoutingProtocol::SetIpv4 (Ptr<Ipv4> ipv4)
 {
-        std::cout << "flag gpcr.cc SetIpv4" <<"\n";
   NS_ASSERT (ipv4 != 0);
   NS_ASSERT (m_ipv4 == 0);
 
   m_ipv4 = ipv4;
 
   HelloIntervalTimer.SetFunction (&RoutingProtocol::HelloTimerExpire, this);
-
-Ptr<UniformRandomVariable> var = CreateObject<UniformRandomVariable> ();
   HelloIntervalTimer.Schedule (FIRST_JITTER);
 
   //Schedule only when it has packets on queue
@@ -705,26 +687,21 @@ RoutingProtocol::SendHello ()
   NS_LOG_FUNCTION (this);
   double positionX;
   double positionY;
-  double positionZ;
 
   Ptr<MobilityModel> MM = m_ipv4->GetObject<MobilityModel> ();
 
   positionX = MM->GetPosition ().x;
   positionY = MM->GetPosition ().y;
-  positionZ = MM->GetPosition ().z;
-std::cout << "SendHello position : "<<positionX<<", "<<positionY<<", "<<positionZ << std::endl;
 
   for (std::map<Ptr<Socket>, Ipv4InterfaceAddress>::const_iterator j = m_socketAddresses.begin (); j != m_socketAddresses.end (); ++j)
     {
       Ptr<Socket> socket = j->first;
       Ipv4InterfaceAddress iface = j->second;
-      HelloHeader helloHeader (((uint64_t) positionX),((uint64_t) positionY), m_neighbors.AmICoordinator (),m_neighbors.AmIHigher ((uint64_t) positionX, (uint64_t) positionY, (uint64_t) positionZ), ((uint64_t) positionZ)); 
-std::cout << "save to Helloheader : "<<(uint64_t)positionX<<", "<<(uint64_t)positionY<<", "<<(uint64_t)positionZ << std::endl;
-//        helloHeader.Setttm_mess(11);
+      HelloHeader helloHeader (((uint64_t) positionX),((uint64_t) positionY));
 
       Ptr<Packet> packet = Create<Packet> ();
       packet->AddHeader (helloHeader);
-      TypeHeader tHeader (GPCRTYPE_HELLO);
+      TypeHeader tHeader (GPSRTYPE_HELLO);
       packet->AddHeader (tHeader);
       // Send to all-hosts broadcast if on /32 addr, subnet-directed otherwise
       Ipv4Address destination;
@@ -736,7 +713,7 @@ std::cout << "save to Helloheader : "<<(uint64_t)positionX<<", "<<(uint64_t)posi
         {
           destination = iface.GetBroadcast ();
         }
-      socket->SendTo (packet, 0, InetSocketAddress (destination, GPCR_PORT));
+      socket->SendTo (packet, 0, InetSocketAddress (destination, GPSR_PORT));
 
     }
 }
@@ -771,11 +748,11 @@ RoutingProtocol::Start ()
 
   switch (LocationServiceName)
     {
-    case GPCR_LS_GOD:
+    case GPSR_LS_GOD:
       NS_LOG_DEBUG ("GodLS in use");
       m_locationService = CreateObject<GodLocationService> ();
       break;
-    case GPCR_LS_RLS:
+    case GPSR_LS_RLS:
       NS_LOG_UNCOND ("RLS not yet implemented");
       break;
     }
@@ -810,7 +787,7 @@ RoutingProtocol::LoopbackRoute (const Ipv4Header & hdr, Ptr<NetDevice> oif)
     {
       rt->SetSource (j->second.GetLocal ());
     }
-  NS_ASSERT_MSG (rt->GetSource () != Ipv4Address (), "Valid GPCR source address not found");
+  NS_ASSERT_MSG (rt->GetSource () != Ipv4Address (), "Valid GPSR source address not found");
   rt->SetGateway (Ipv4Address ("127.0.0.1"));
   rt->SetOutputDevice (m_lo);
   return rt;
@@ -820,7 +797,7 @@ RoutingProtocol::LoopbackRoute (const Ipv4Header & hdr, Ptr<NetDevice> oif)
 int
 RoutingProtocol::GetProtocolNumber (void) const
 {
-  return GPCR_PORT;
+  return GPSR_PORT;
 }
 
 void
@@ -828,7 +805,7 @@ RoutingProtocol::AddHeaders (Ptr<Packet> p, Ipv4Address source, Ipv4Address dest
 {
 
   NS_LOG_FUNCTION (this << " source " << source << " destination " << destination);
-
+ 
   Vector myPos;
   Ptr<MobilityModel> MM = m_ipv4->GetObject<MobilityModel> ();
   myPos.x = MM->GetPosition ().x;
@@ -858,11 +835,8 @@ RoutingProtocol::AddHeaders (Ptr<Packet> p, Ipv4Address source, Ipv4Address dest
 
   PositionHeader posHeader (positionX, positionY,  hdrTime, (uint64_t) 0,(uint64_t) 0, (uint8_t) 0, myPos.x, myPos.y); 
   p->AddHeader (posHeader);
-  TypeHeader tHeader (GPCRTYPE_POS);
+  TypeHeader tHeader (GPSRTYPE_POS);
   p->AddHeader (tHeader);
-
-Time ttm_time = Simulator::Now ();
-std::cout<<p->GetUid()<<"// forwarding Time : //"<<ttm_time.GetSeconds()<<"// source : //"<<source<<"// destination : //"<<destination<<std::endl;
 
   m_downTarget (p, source, destination, protocol, route);
 
@@ -885,15 +859,15 @@ RoutingProtocol::Forwarding (Ptr<const Packet> packet, const Ipv4Header & header
   Vector RecPosition;
   uint8_t inRec = 0;
 
-  TypeHeader tHeader (GPCRTYPE_POS);
+  TypeHeader tHeader (GPSRTYPE_POS);
   PositionHeader hdr;
   p->RemoveHeader (tHeader);
   if (!tHeader.IsValid ())
     {
-      NS_LOG_DEBUG ("GPCR message " << p->GetUid () << " with unknown type received: " << tHeader.Get () << ". Drop");
+      NS_LOG_DEBUG ("GPSR message " << p->GetUid () << " with unknown type received: " << tHeader.Get () << ". Drop");
       return false;     // drop
     }
-  if (tHeader.Get () == GPCRTYPE_POS)
+  if (tHeader.Get () == GPSRTYPE_POS)
     {
 
       p->RemoveHeader (hdr);
@@ -1009,8 +983,8 @@ Ptr<Ipv4Route>
 RoutingProtocol::RouteOutput (Ptr<Packet> p, const Ipv4Header &header,
                               Ptr<NetDevice> oif, Socket::SocketErrno &sockerr)
 {
-std::cout<<std::endl;
   NS_LOG_FUNCTION (this << header << (oif ? oif->GetIfIndex () : 0));
+
   if (!p)
     {
       return LoopbackRoute (header, oif);     // later
@@ -1018,7 +992,7 @@ std::cout<<std::endl;
   if (m_socketAddresses.empty ())
     {
       sockerr = Socket::ERROR_NOROUTETOHOST;
-      NS_LOG_LOGIC ("No gpcr interfaces");
+      NS_LOG_LOGIC ("No gpsr interfaces");
       Ptr<Ipv4Route> route;
       return route;
     }
@@ -1026,14 +1000,13 @@ std::cout<<std::endl;
   Ptr<Ipv4Route> route = Create<Ipv4Route> ();
   Ipv4Address dst = header.GetDestination ();
 
-
-
   Vector dstPos = Vector (1, 0, 0);
 
   if (!(dst == m_ipv4->GetAddress (1, 0).GetBroadcast ()))
     {
       dstPos = m_locationService->GetPosition (dst);
     }
+
   if (CalculateDistance (dstPos, m_locationService->GetInvalidPosition ()) == 0 && m_locationService->IsInSearch (dst))
     {
       DeferredRouteOutputTag tag;
@@ -1080,7 +1053,6 @@ std::cout<<std::endl;
       route->SetDestination (header.GetDestination ());
       NS_ASSERT (route != 0);
       NS_LOG_DEBUG ("Exist route to " << route->GetDestination () << " from interface " << route->GetSource ());
-
       if (oif != 0 && route->GetOutputDevice () != oif)
         {
           NS_LOG_DEBUG ("Output device doesn't match. Dropped.");
@@ -1096,7 +1068,6 @@ std::cout<<std::endl;
         {
           p->AddPacketTag (tag); 
         }
-std::cout<<"Flag 3"<<std::endl;
       return LoopbackRoute (header, oif);     //in RouteInput the recovery-mode is called
     }
 

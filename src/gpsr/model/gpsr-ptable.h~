@@ -1,5 +1,5 @@
-#ifndef GPCR_PTABLE_H
-#define GPCR_PTABLE_H
+#ifndef GPSR_PTABLE_H
+#define GPSR_PTABLE_H
 
 #include <map>
 #include <cassert>
@@ -12,38 +12,21 @@
 #include "ns3/mobility-model.h"
 #include "ns3/vector.h"
 #include "ns3/wifi-mac-header.h"
-#include "ns3/random-variable-stream.h"
+#include "ns3/random-variable.h"
 #include <complex>
 
 namespace ns3 {
-namespace gpcr {
+namespace gpsr {
 
 /*
- * \ingroup gpcr
- * \brief Position table used by GPCR
+ * \ingroup gpsr
+ * \brief Position table used by GPSR
  */
 class PositionTable
 {
 public:
   /// c-tor
   PositionTable ();
-
-  /**
-   * \brief Gets the info about if the node "id" is a coordinator
-   * \param id Ipv4Address to get the isCoordinator from
-   * \return uint8_t with 1 if it is a coordinator, 0 otherwise
-   */
-  uint8_t GetIsCoordinator (Ipv4Address id);
-  uint8_t GetIsHigher (Ipv4Address id);
-
-
-  /**
-   * \brief Gets the info about if the node in, which called the function, is a coordinator
-   * \return uint8_t with 1 if it is a coordinator, 0 otherwise
-   */
-  uint8_t AmICoordinator ();
-  uint8_t AmIHigher (uint64_t positionX, uint64_t positionY, uint64_t positionZ);
-
 
   /**
    * \brief Gets the last time the entry was updated
@@ -55,7 +38,7 @@ public:
   /**
    * \brief Adds entry in position table
    */
-  void AddEntry (Ipv4Address id, Vector position, uint8_t isCoordinator, uint8_t ishigher);
+  void AddEntry (Ipv4Address id, Vector position);
 
   /**
    * \brief Deletes entry in position table
@@ -65,7 +48,7 @@ public:
   /**
    * \brief Gets position from position table
    * \param id Ipv4Address to get position from
-   * \return Position of that id or NULL if not known
+   * \return Position of that id or PositionTable::GetInvalidPosition () if not known
    */
   Vector GetPosition (Ipv4Address id);
 
@@ -94,23 +77,17 @@ public:
     return m_txErrorCallback;
   }
 
-/**
- * \brief Gets a coordinator as next hop if thre is one
- * \param position the position of the node that has the packet
- * \param nodePos the position of the destination node
- * \return Ipv4Address of a coordinator closer to the destination, Ipv4Address::GetZero () if no coordinator was found
- */
-  Ipv4Address GetCoordinatorFromNeighbor (Vector position, Vector nodePos);
-
-  Ipv4Address GetHigherFromNeighbor (Vector position, Vector nodePos);
-
   /**
-   * \brief Gets next hop according to GPCR protocol
+   * \brief Gets next hop according to GPSR protocol
    * \param position the position of the destination node
    * \param nodePos the position of the node that has the packet
    * \return Ipv4Address of the next hop, Ipv4Address::GetZero () if no nighbour was found in greedy mode
    */
   Ipv4Address BestNeighbor (Vector position, Vector nodePos);
+
+  bool IsInSearch (Ipv4Address id);
+
+  bool HasPosition (Ipv4Address id);
 
   static Vector GetInvalidPosition ()
   {
@@ -118,7 +95,7 @@ public:
   }
 
   /**
-   * \brief Gets next hop according to GPCR recovery-mode protocol (right hand rule)
+   * \brief Gets next hop according to GPSR recovery-mode protocol (right hand rule)
    * \param previousHop the position of the node that sent the packet to this node
    * \param nodePos the position of the destination node
    * \return Ipv4Address of the next hop, Ipv4Address::GetZero () if no nighbour was found in greedy mode
@@ -132,20 +109,17 @@ public:
 
 private:
   Time m_entryLifeTime;
-
-  std::map<Ipv4Address, std::pair<Vector, std::pair<Time, std::pair<uint8_t, uint8_t> > > > m_table;
+  std::map<Ipv4Address, std::pair<Vector, Time> > m_table;
   // TX error callback
   Callback<void, WifiMacHeader const &> m_txErrorCallback;
   // Process layer 2 TX error notification
   void ProcessTxError (WifiMacHeader const&);
-
-//  double aveDist;
 
 
 
 
 };
 
-}   // gpcr
+}   // gpsr
 } // ns3
-#endif /* GPCR_PTABLE_H */
+#endif /* GPSR_PTABLE_H */
